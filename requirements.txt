@@ -1,8 +1,8 @@
-Flask==2.0.2
-PyPDF2==1.26.0
-nltk==3.6.3
-openai==0.12.0
-numpy==1.22.0
-pandas==1.4.1
-PyMuPDF==1.19.6
-scikit-learn==1.0.2
+Flask==3.0.0
+PyPDF2==3.0.1
+nltk==3.8.1
+openai==1.30.4
+numpy==1.26.4
+pandas==2.2.2
+PyMuPDF==1.24.5
+scikit-learn==1.5.0
