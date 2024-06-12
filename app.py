@@ -68,14 +68,8 @@ def process_resumes():
             idealresumes_text += '\n' + page.extract_text()
     
   
-   
-    
-    
     embedIdeal = get_embedding(preprocess_text(idealresumes_text) + " ".join(jd.split('\n')))
     
-   
-   
-
     resumes = {}
     
     for file in request.files.getlist('resumes'):
@@ -92,14 +86,33 @@ def process_resumes():
     resumes_df["Text_Similarity"] = resumes_df["embeddings"].apply(lambda x: compute_cosine_similarity(x, embedIdeal))
     resumes_df["ats"] = resumes_df["Text"].apply(lambda x: compute_matching_score(extract_keywords(" ".join(jd.split('\n')) + idealresumes_text), extract_keywords(x)))
 
-    Weights = [1.07268789, -0.18661928]
+    Weights = [0.6,0.4]
     x = Weights[0]
     y = Weights[1]
     resumes_df["avg"] = (resumes_df["Text_Similarity"] * x + resumes_df["ats"] * y)
     sorted_resumes_df = resumes_df.sort_values(by="avg", ascending=False)
 
+    
+    
+    sorted_resumes_df["Percentile"] = sorted_resumes_df['avg'].rank(pct=True)*100
+    percentile = sorted_resumes_df.set_index('Filename')['Percentile'].to_dict()
+    sorted_resumes_df['Rank'] = sorted_resumes_df['avg'].rank(ascending=False, method='min')
+    rank = sorted_resumes_df.set_index('Filename')['Rank'].to_dict()
+    sorted_resumes_df.drop(['Percentile', 'Rank'], axis=1)
+
     result = sorted_resumes_df[['Filename', 'Text_Similarity', 'ats', 'avg']].to_dict(orient='records')
-    return jsonify(result)
+
+    response = {
+        'percentile': percentile,
+        'rank': rank,
+        'result': result
+
+    }
+    
+
+    return jsonify(response)
+
+
 
 if __name__ == '__main__':
     app.run(port=10000,debug=True)
