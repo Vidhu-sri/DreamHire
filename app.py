@@ -66,20 +66,26 @@ def process_resumes():
         pdf_reader = PdfReader(file)
         for page in pdf_reader.pages:
             idealresumes_text += '\n' + page.extract_text()
-
+    
+  
+   
+    
+    
     embedIdeal = get_embedding(preprocess_text(idealresumes_text) + " ".join(jd.split('\n')))
+    
+   
+   
 
     resumes = {}
+    
     for file in request.files.getlist('resumes'):
         text = ""
-        try:
-            pdf_document = fitz.open(file.stream)
-            for page_num in range(len(pdf_document)):
-                page = pdf_document.load_page(page_num)
-                text += '\n' + page.get_text()
-            resumes[file.filename] = text
-        except Exception as e:
-            return jsonify({"error": f"Error processing file {file.filename}: {str(e)}"}), 500
+        pdf_reader = PdfReader(file)
+        for page in pdf_reader.pages:
+            text += '\n' + page.extract_text()
+        resumes[file.filename] = text
+        
+  
 
     resumes_df = pd.DataFrame(list(resumes.items()), columns=['Filename', 'Text'])
     resumes_df["embeddings"] = resumes_df["Text"].apply(lambda x: get_embedding(preprocess_text(x)))
